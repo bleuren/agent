@@ -9,6 +9,34 @@ use Jaybizzle\CrawlerDetect\CrawlerDetect;
 
 class Agent
 {
+    protected $desktopBrowsers = [
+        'Edge' => 'Edg|Edge[.0-9]+',
+        'Chrome' => 'Chrome',
+        'Opera' => 'OPR',
+        'Coc Coc' => 'coc_coc_browser',
+        'IE' => 'MSIE|IEMobile|MSIEMobile|Trident[.0-9]+',
+        'WeChat' => 'MicroMessenger',
+        'Mozilla' => 'Mozilla',
+        'Netscape' => 'Netscape',
+        'Safari' => 'Safari',
+        'Firefox' => 'Firefox',
+        'Vivaldi' => 'Vivaldi',
+        'UCBrowser' => 'UCBrowser',
+        'Opera Mini' => 'Opera Mini',
+    ];
+
+    protected $desktopOperatingSystems = [
+        'Windows' => 'Windows',
+        'Windows NT' => 'Windows NT',
+        'OS X' => 'Mac OS X',
+        'Debian' => 'Debian',
+        'Ubuntu' => 'Ubuntu',
+        'Macintosh' => 'PPC',
+        'OpenBSD' => 'OpenBSD',
+        'Linux' => 'Linux',
+        'ChromeOS' => 'CrOS',
+    ];
+
     public function __construct(
         protected CustomMobileDetect $detector,
         protected CrawlerDetect $crawlerDetector,
@@ -45,8 +73,15 @@ class Agent
 
     public function browser()
     {
-        foreach ($this->detector->getBrowsers() as $browserName => $browserRegex) {
+        $mobileBrowsers = $this->detector->getBrowsers();
+        $desktopBrowsers = $this->desktopBrowsers;
+        foreach ($mobileBrowsers as $browserName => $browserRegex) {
             if ($this->detector->is($browserName)) {
+                return $browserName;
+            }
+        }
+        foreach ($desktopBrowsers as $browserName => $browserRegex) {
+            if (preg_match("/{$browserRegex}/i", $this->detector->getUserAgent())) {
                 return $browserName;
             }
         }
@@ -56,8 +91,17 @@ class Agent
 
     public function platform()
     {
-        foreach ($this->detector->getOperatingSystems() as $platformName => $platformRegex) {
+        $mobileOperatingSystems = $this->detector->getOperatingSystems();
+        $desktopOperatingSystems = $this->desktopOperatingSystems;
+
+        foreach ($mobileOperatingSystems as $platformName => $platformRegex) {
             if ($this->detector->is($platformName)) {
+                return $platformName;
+            }
+        }
+
+        foreach ($desktopOperatingSystems as $platformName => $platformRegex) {
+            if (preg_match("/{$platformRegex}/i", $this->detector->getUserAgent())) {
                 return $platformName;
             }
         }
